@@ -10,6 +10,7 @@
 
 GOBIN = $(shell pwd)/build/bin
 GO ?= latest
+VERSION ?= 1.0.0
 
 gbas:
 	build/env.sh go run build/ci.go install ./cmd/gbas
