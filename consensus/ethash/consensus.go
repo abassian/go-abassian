@@ -41,6 +41,10 @@ var (
 	FrontierBlockReward       = big.NewInt(5e+18) // Block reward in wei for successfully mining a block
 	ByzantiumBlockReward      = big.NewInt(3e+18) // Block reward in wei for successfully mining a block upward from Byzantium
 	ConstantinopleBlockReward = big.NewInt(5e+18) // Block reward in wei for successfully mining a block upward from Constantinople
+	BNAMinerReward            = big.NewInt(5e+18) // Block reward in wei for successfully mining a block
+	BNATreasuryFundReward     = big.NewInt(1e+18) // Block reward in wei allocated to BNA
+	BNATreasuryFundAddress 		= common.HexToAddress("0x87077e6c247B6D428782dbeBDeB233c6a8Bf2F73")
+
 	maxUncles                 = 2                 // Maximum number of uncles allowed in a single block
 	allowedFutureBlockTime    = 15 * time.Second  // Max time from current time allowed for blocks, before they're considered future blocks
 
@@ -604,13 +608,8 @@ var (
 // included uncles. The coinbase of each uncle block is also rewarded.
 func accumulateRewards(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header) {
 	// Select the correct block reward based on chain progression
-	blockReward := FrontierBlockReward
-	if config.IsByzantium(header.Number) {
-		blockReward = ByzantiumBlockReward
-	}
-	if config.IsConstantinople(header.Number) {
-		blockReward = ConstantinopleBlockReward
-	}
+	blockReward := BNAMinerReward
+
 	// Accumulate the rewards for the miner and any included uncles
 	reward := new(big.Int).Set(blockReward)
 	r := new(big.Int)
@@ -624,5 +623,9 @@ func accumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		r.Div(blockReward, big32)
 		reward.Add(reward, r)
 	}
+
 	state.AddBalance(header.Coinbase, reward)
+
+	// Treasury payment
+	state.AddBalance(BNATreasuryFundAddress, BNATreasuryFundReward)
 }
